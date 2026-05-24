@@ -1,4 +1,4 @@
-FROM hseeberger/scala-sbt:eclipse-temurin-11.0.14.1_1.6.2_2.13.8 as build
+FROM hseeberger/scala-sbt:eclipse-temurin-11.0.14.1_1.6.2_2.13.8 AS build
 
 WORKDIR /app
 
@@ -13,7 +13,8 @@ RUN sbt -batch \
 	update compile stage
 RUN chmod a+rx /app/target/universal/stage/bin/*
 
-FROM openjdk:11-jre-slim
+# openjdk:11-jre-slim was removed from Docker Hub; use eclipse-temurin instead.
+FROM eclipse-temurin:11-jre-jammy
 
 WORKDIR /app
 
