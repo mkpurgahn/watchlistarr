@@ -285,7 +285,7 @@ class PlexUtilsSpec extends AnyFlatSpec with Matchers with PlexUtils with MockFa
     result.size shouldBe 2
     result.head shouldBe TokenWatchlistItem(
       Some("The Twilight Saga: Breaking Dawn - Part 2"),
-      "5d77688b9ab54400214e789b",
+      Some("5d77688b9ab54400214e789b"),
       "movie",
       "/library/metadata/5d77688b9ab54400214e789b"
     )
@@ -326,7 +326,7 @@ class PlexUtilsSpec extends AnyFlatSpec with Matchers with PlexUtils with MockFa
     result.size shouldBe 2
     result.head shouldBe TokenWatchlistItem(
       Some("The Twilight Saga: Breaking Dawn - Part 2"),
-      "5d77688b9ab54400214e789b",
+      Some("5d77688b9ab54400214e789b"),
       "movie",
       "/library/metadata/5d77688b9ab54400214e789b"
     )
