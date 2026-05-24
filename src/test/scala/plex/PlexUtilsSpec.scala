@@ -287,7 +287,7 @@ class PlexUtilsSpec extends AnyFlatSpec with Matchers with PlexUtils with MockFa
       Some("The Twilight Saga: Breaking Dawn - Part 2"),
       Some("5d77688b9ab54400214e789b"),
       "movie",
-      "/library/metadata/5d77688b9ab54400214e789b"
+      Some("/library/metadata/5d77688b9ab54400214e789b")
     )
   }
 
@@ -328,7 +328,7 @@ class PlexUtilsSpec extends AnyFlatSpec with Matchers with PlexUtils with MockFa
       Some("The Twilight Saga: Breaking Dawn - Part 2"),
       Some("5d77688b9ab54400214e789b"),
       "movie",
-      "/library/metadata/5d77688b9ab54400214e789b"
+      Some("/library/metadata/5d77688b9ab54400214e789b")
     )
   }
 

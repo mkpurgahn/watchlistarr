@@ -219,7 +219,10 @@ trait PlexUtils {
       i: TokenWatchlistItem
   ): EitherT[IO, Throwable, Item] = {
 
-    val key = cleanKey(i.key)
+    val key = i.key.map(cleanKey).getOrElse("")
+    if (key.isEmpty)
+      EitherT.leftT[IO, Item](new Throwable(s"Watchlist item ${i.title.getOrElse("(untitled)")} has no key; cannot resolve GUIDs"))
+    else {
     val url = Uri
       .unsafeFromString(s"https://discover.provider.plex.tv$key")
       .withQueryParam("X-Plex-Token", config.plexTokens.headOption.getOrElse("unknown"))
@@ -231,6 +234,7 @@ trait PlexUtils {
     } yield guids
 
     guids.map(ids => Item(i.title.getOrElse("Unknown"), ids, i.`type`, ended = None))
+    }
   }
 
   private def cleanKey(path: String): String =
