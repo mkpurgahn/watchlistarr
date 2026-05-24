@@ -6,27 +6,27 @@ import cats.implicits.toTraverseOps
 import configuration.PlexConfiguration
 import http.HttpClient
 import model.{GraphQLQuery, Item}
-import org.http4s.{Method, Uri}
+import org.http4s.{Header, Method, Uri}
 import org.slf4j.LoggerFactory
 import io.circe.generic.extras
 import io.circe.generic.extras.auto._
 import io.circe.syntax.EncoderOps
 import org.http4s.client.UnexpectedStatus
-
-import java.util.UUID
+import org.typelevel.ci.CIString
 
 trait PlexUtils {
 
   private val logger = LoggerFactory.getLogger(getClass)
+  private val watchlistSections = List("recently-added", "coming-soon")
+  private val defaultContainerSize = 100
 
   implicit val customConfig: extras.Configuration =
     extras.Configuration.default.withDefaults
 
   protected def fetchWatchlistFromRss(client: HttpClient)(url: Uri): IO[Set[Item]] = {
-    val randomUUID = UUID.randomUUID().toString.take(12)
-    val jsonFormatUrl = url
-      .withQueryParam("format", "json")
-      .withQueryParam("cache_buster", randomUUID)
+    // Plex moved RSS to S3 (Jan 2026). The cache_buster query param interacts badly
+    // with the S3 redirect, so just request format=json. See pulsarr rss-fetcher.ts.
+    val jsonFormatUrl = url.withQueryParam("format", "json")
 
     client.httpRequest(Method.GET, jsonFormatUrl).map {
       case Left(UnexpectedStatus(s, _, _)) if s.code == 500 =>
@@ -67,29 +67,40 @@ trait PlexUtils {
       config: PlexConfiguration,
       client: HttpClient,
       containerStart: Int = 0
-  ): EitherT[IO, Throwable, Set[Item]] = config.plexTokens
-    .map { token =>
-      val containerSize = 300
-      val url = Uri
-        .unsafeFromString("https://discover.provider.plex.tv/library/sections/watchlist/all")
-        .withQueryParam("X-Plex-Token", token)
-        .withQueryParam("X-Plex-Container-Start", containerStart)
-        .withQueryParam("X-Plex-Container-Size", containerSize)
+  ): EitherT[IO, Throwable, Set[Item]] = {
+
+    def fetchSection(section: String, token: String, start: Int): EitherT[IO, Throwable, Set[Item]] = {
+      val url = Uri.unsafeFromString(s"https://discover.provider.plex.tv/hubs/sections/watchlist/$section")
+      val paginationHeaders: List[Header.ToRaw] = List(
+        Header.Raw(CIString("X-Plex-Container-Start"), start.toString),
+        Header.Raw(CIString("X-Plex-Container-Size"), defaultContainerSize.toString)
+      )
 
       for {
-        response       <- EitherT(client.httpRequest(Method.GET, url))
+        response <- EitherT(client.httpRequest(Method.GET, url, Some(token), None, paginationHeaders))
         tokenWatchlist <- EitherT(IO.pure(response.as[TokenWatchlist])).leftMap(err => new Throwable(err))
         result         <- EitherT.liftF(toItems(config, client)(tokenWatchlist))
         nextPage <-
-          if (tokenWatchlist.MediaContainer.totalSize > containerStart + containerSize)
-            getSelfWatchlist(config, client, containerStart + containerSize)
+          if (tokenWatchlist.MediaContainer.totalSize > start + defaultContainerSize)
+            fetchSection(section, token, start + defaultContainerSize)
           else
             EitherT.pure[IO, Throwable](Set.empty[Item])
       } yield result ++ nextPage
     }
-    .toList
-    .sequence
-    .map(_.toSet.flatten)
+
+    def fetchForToken(token: String): EitherT[IO, Throwable, Set[Item]] =
+      watchlistSections
+        .map(section => fetchSection(section, token, containerStart))
+        .toList
+        .sequence
+        .map(_.flatten.toSet)
+
+    config.plexTokens
+      .map(fetchForToken)
+      .toList
+      .sequence
+      .map(_.flatten.toSet)
+  }
 
   protected def getOthersWatchlist(config: PlexConfiguration, client: HttpClient): EitherT[IO, Throwable, Set[Item]] =
     for {
@@ -190,7 +201,7 @@ trait PlexUtils {
     plex.MediaContainer.Metadata
       .map(i =>
         toItems(config, client, i).leftMap { err =>
-          logger.warn(s"Found item ${i.title} on the watchlist, but we cannot find this in Plex's database.")
+          logger.warn(s"Found item ${i.title.getOrElse("(untitled)")} on the watchlist, but we cannot find this in Plex's database.")
           err
         }
       )
@@ -219,7 +230,7 @@ trait PlexUtils {
       guids = result.MediaContainer.Metadata.flatMap(_.Guid.map(_.id))
     } yield guids
 
-    guids.map(ids => Item(i.title, ids, i.`type`, ended = None))
+    guids.map(ids => Item(i.title.getOrElse("Unknown"), ids, i.`type`, ended = None))
   }
 
   private def cleanKey(path: String): String =

@@ -24,36 +24,39 @@ class HttpClient {
 
   private val cacheTtl = 5.seconds
 
-  private val cache: AsyncLoadingCache[(Method, Uri, Option[String], Option[Json]), Either[Throwable, Json]] =
+    private val cache
+      : AsyncLoadingCache[(Method, Uri, Option[String], Option[Json], List[Header.ToRaw]), Either[Throwable, Json]] =
     Scaffeine()
       .recordStats()
       .expireAfterWrite(cacheTtl)
       .maximumSize(1000)
-      .buildAsyncFuture { case (method, url, apiKey, payload) =>
-        makeHttpRequest(method, url, apiKey, payload).unsafeToFuture()
+      .buildAsyncFuture { case (method, url, apiKey, payload, extraHeaders) =>
+        makeHttpRequest(method, url, apiKey, payload, extraHeaders).unsafeToFuture()
       }
 
-  def httpRequest(
+    def httpRequest(
       method: Method,
       url: Uri,
       apiKey: Option[String] = None,
-      payload: Option[Json] = None
-  ): IO[Either[Throwable, Json]] = IO.fromFuture(IO(cache.get(method, url, apiKey, payload)))
+      payload: Option[Json] = None,
+      extraHeaders: List[Header.ToRaw] = Nil
+    ): IO[Either[Throwable, Json]] = IO.fromFuture(IO(cache.get(method, url, apiKey, payload, extraHeaders)))
 
-  private def makeHttpRequest(
+    private def makeHttpRequest(
       method: Method,
       url: Uri,
       apiKey: Option[String] = None,
-      payload: Option[Json] = None
-  ): IO[Either[Throwable, Json]] = {
-    val host = s"${url.host.getOrElse(Uri.Host.unsafeFromString("127.0.0.1")).value}"
-
+      payload: Option[Json] = None,
+      extraHeaders: List[Header.ToRaw] = Nil
+    ): IO[Either[Throwable, Json]] = {
+    // Note: do NOT set Host explicitly. Plex's rss.plex.tv now 302-redirects to S3,
+    // and a manual Host header survives FollowRedirect and triggers 403 from S3.
+    // Let http4s/ember derive Host from the (possibly redirected) target URI.
     val baseRequest = Request[IO](method = method, uri = url)
       .withHeaders(
         Header.Raw(CIString("Accept"), "application/json"),
         Header.Raw(CIString("Content-Type"), "application/json"),
-        Header.Raw(CIString("User-Agent"), "watchlistarr/1.0"),
-        Header.Raw(CIString("Host"), host)
+        Header.Raw(CIString("User-Agent"), "watchlistarr/1.0")
       )
     val requestWithApiKey = apiKey.fold(baseRequest)(key =>
       baseRequest.withHeaders(
@@ -63,10 +66,11 @@ class HttpClient {
       )
     )
     val requestWithPayload = payload.fold(requestWithApiKey)(p => requestWithApiKey.withEntity(p))
+    val requestWithHeaders = requestWithPayload.putHeaders(extraHeaders: _*)
 
-    logger.debug(s"HTTP Request: ${requestWithPayload.toString()}")
+    logger.debug(s"HTTP Request: ${requestWithHeaders.toString()}")
 
-    val responseIO = client.use(_.expect[Json](requestWithPayload).attempt)
+    val responseIO = client.use(_.expect[Json](requestWithHeaders).attempt)
 
     responseIO.map { response =>
       logger.debug(s"HTTP Response: $response")

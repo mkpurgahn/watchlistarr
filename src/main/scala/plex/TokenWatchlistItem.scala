@@ -1,7 +1,7 @@
 package plex
 
 private[plex] case class TokenWatchlistItem(
-    title: String,
+    title: Option[String] = None,
     guid: String,
     `type`: String,
     key: String,

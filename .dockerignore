@@ -4,3 +4,4 @@
 !/docker/entrypoint.sh
 !/project
 !/src
+!/target/universal/stage

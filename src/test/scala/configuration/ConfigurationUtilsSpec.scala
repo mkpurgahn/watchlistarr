@@ -214,7 +214,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/health")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(Right(Json.Null)))
       .anyNumberOfTimes()
@@ -223,7 +224,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/health")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(Right(Json.Null)))
       .anyNumberOfTimes()
@@ -232,7 +234,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/qualityprofile")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("quality-profile.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -241,7 +244,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/languageprofile")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("sonarr-language-profile.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -250,7 +254,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/qualityprofile")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("quality-profile.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -259,7 +264,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/rootFolder")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("rootFolder.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -268,7 +274,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/rootFolder")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("rootFolder.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -279,7 +286,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
           "https://discover.provider.plex.tv/rss?X-Plex-Token=test-token&X-Plex-Client-Identifier=watchlistarr"
         ),
         None,
-        Some(parse("""{"feedType": "watchlist"}""").getOrElse(Json.Null))
+        Some(parse("""{"feedType": "watchlist"}""").getOrElse(Json.Null)),
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("rss-feed-generated.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -290,7 +298,8 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
           "https://discover.provider.plex.tv/rss?X-Plex-Token=test-token&X-Plex-Client-Identifier=watchlistarr"
         ),
         None,
-        Some(parse("""{"feedType": "friendsWatchlist"}""").getOrElse(Json.Null))
+        Some(parse("""{"feedType": "friendsWatchlist"}""").getOrElse(Json.Null)),
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("rss-feed-generated.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -299,6 +308,7 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.POST,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/tag")),
         Some("sonarr-api-key"),
+        *,
         *
       )
       .returning(IO.pure(parse(Source.fromResource("tag-response.json").getLines().mkString("\n"))))
@@ -308,6 +318,7 @@ class ConfigurationUtilsSpec extends AnyFlatSpec with Matchers with MockFactory 
         Method.POST,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/tag")),
         Some("radarr-api-key"),
+        *,
         *
       )
       .returning(IO.pure(parse(Source.fromResource("tag-response.json").getLines().mkString("\n"))))

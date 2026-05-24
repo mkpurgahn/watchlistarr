@@ -1,0 +1,11 @@
+FROM eclipse-temurin:11-jre
+
+WORKDIR /app
+
+# Copy a locally prebuilt stage (run `sbt -batch update compile stage` on host first)
+COPY target/universal/stage/ /app/
+
+COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod 755 /app/entrypoint.sh && sed -i 's/\r$//' /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]

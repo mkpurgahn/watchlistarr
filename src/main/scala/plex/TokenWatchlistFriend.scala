@@ -12,5 +12,5 @@ private[plex] case class PageInfo(hasNextPage: Boolean, endCursor: Option[String
 
 private[plex] case class WatchlistNode(id: String, title: String, `type`: String) {
   def toTokenWatchlistItem: TokenWatchlistItem =
-    TokenWatchlistItem(title = title, guid = id, key = s"/library/metadata/$id", `type` = `type`.toLowerCase)
+    TokenWatchlistItem(title = Some(title), guid = id, key = s"/library/metadata/$id", `type` = `type`.toLowerCase)
 }

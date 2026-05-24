@@ -1,7 +1,10 @@
 #!/bin/bash
 CMD=("/app/bin/watchlistarr")
 
-JAVA_OPTS=(-Xmx100m)
+# Respect user-provided JAVA_OPTS; otherwise set a sane default heap to avoid runaway memory.
+if [ -z "$JAVA_OPTS" ]; then
+  JAVA_OPTS="-Xmx1g -Xms512m"
+fi
 
 if [ -n "$SONARR_API_KEY" ]; then
   CMD+=("-Dsonarr.apikey=$SONARR_API_KEY")
@@ -95,4 +98,5 @@ if [ -n "$LOG_LEVEL" ]; then
   CMD+=("-Dlog.level=$LOG_LEVEL")
 fi
 
-exec "${CMD[@]}" "${JAVA_OPTS[@]}"
+export JAVA_OPTS
+exec "${CMD[@]}"

@@ -70,12 +70,25 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
       .expects(
         Method.GET,
         Uri.unsafeFromString(
-          "https://discover.provider.plex.tv/library/sections/watchlist/all?X-Plex-Token=plex-token&X-Plex-Container-Start=0&X-Plex-Container-Size=300"
+          "https://discover.provider.plex.tv/hubs/sections/watchlist/recently-added"
         ),
+        Some("plex-token"),
         None,
-        None
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("self-watchlist-from-token.json").getLines().mkString("\n"))))
+      .once()
+    (httpClient.httpRequest _)
+      .expects(
+        Method.GET,
+        Uri.unsafeFromString(
+          "https://discover.provider.plex.tv/hubs/sections/watchlist/coming-soon"
+        ),
+        Some("plex-token"),
+        None,
+        *
+      )
+      .returning(IO.pure(parse(Source.fromResource("empty-watchlist-from-token.json").getLines().mkString("\n"))))
       .once()
     (httpClient.httpRequest _)
       .expects(
@@ -84,7 +97,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
           "https://discover.provider.plex.tv/library/metadata/5df46a38237002001dce338d?X-Plex-Token=plex-token"
         ),
         None,
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("single-item-plex-metadata.json").getLines().mkString("\n"))))
       .once()
@@ -95,7 +109,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
           "https://discover.provider.plex.tv/library/metadata/617d3ab142705b2183b1b20b?X-Plex-Token=plex-token"
         ),
         None,
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("single-item-plex-metadata2.json").getLines().mkString("\n"))))
       .once()
@@ -112,7 +127,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.POST,
         Uri.unsafeFromString("https://community.plex.tv/api"),
         Some("plex-token"),
-        Some(query.asJson)
+        Some(query.asJson),
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("plex-get-all-friends.json").getLines().mkString("\n"))))
       .once()
@@ -121,6 +137,7 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.POST,
         Uri.unsafeFromString("https://community.plex.tv/api"),
         Some("plex-token"),
+        *,
         *
       )
       .returning(IO.pure(parse(Source.fromResource("plex-get-watchlist-from-friend.json").getLines().mkString("\n"))))
@@ -132,7 +149,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
           "https://discover.provider.plex.tv/library/metadata/5d77688b9ab54400214e789b?X-Plex-Token=plex-token"
         ),
         None,
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("single-item-plex-metadata2.json").getLines().mkString("\n"))))
       .once()
@@ -143,7 +161,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
           "https://discover.provider.plex.tv/library/metadata/5d77688b594b2b001e68f2f0?X-Plex-Token=plex-token"
         ),
         None,
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("single-item-plex-metadata2.json").getLines().mkString("\n"))))
       .anyNumberOfTimes()
@@ -154,7 +173,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
           "https://discover.provider.plex.tv/library/metadata/5d77688b9ab54400214e789b?X-Plex-Token=plex-token"
         ),
         None,
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("single-item-plex-metadata2.json").getLines().mkString("\n"))))
       .once()
@@ -205,7 +225,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.GET,
         Uri.unsafeFromString("https://localhost:7878/api/v3/movie"),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("radarr.json").getLines().mkString("\n"))))
       .once()
@@ -214,7 +235,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.GET,
         Uri.unsafeFromString("https://localhost:7878/api/v3/exclusions"),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("exclusions.json").getLines().mkString("\n"))))
       .once()
@@ -223,7 +245,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.POST,
         Uri.unsafeFromString("https://localhost:7878/api/v3/movie"),
         Some("radarr-api-key"),
-        parse(movieToAdd).toOption
+        parse(movieToAdd).toOption,
+        *
       )
       .returning(IO.pure(parse("{}")))
       .once()
@@ -232,7 +255,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.POST,
         Uri.unsafeFromString("https://localhost:7878/api/v3/movie"),
         Some("radarr-api-key"),
-        parse(movieToAdd2).toOption
+        parse(movieToAdd2).toOption,
+        *
       )
       .returning(IO.pure(parse("{}")))
       .once()
@@ -241,7 +265,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.POST,
         Uri.unsafeFromString("https://localhost:7878/api/v3/movie"),
         Some("radarr-api-key"),
-        parse(movieToAdd3).toOption
+        parse(movieToAdd3).toOption,
+        *
       )
       .returning(IO.pure(parse("{}")))
       .once()
@@ -254,7 +279,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.GET,
         Uri.unsafeFromString("https://localhost:8989/api/v3/series"),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("sonarr.json").getLines().mkString("\n"))))
       .once()
@@ -263,7 +289,8 @@ class PlexTokenSyncSpec extends AnyFlatSpec with Matchers with MockFactory {
         Method.GET,
         Uri.unsafeFromString("https://localhost:8989/api/v3/importlistexclusion"),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(Source.fromResource("importlistexclusion.json").getLines().mkString("\n"))))
       .once()

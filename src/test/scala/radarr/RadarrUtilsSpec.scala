@@ -23,7 +23,8 @@ class RadarrUtilsSpec extends AnyFlatSpec with Matchers with RadarrUtils with Mo
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/movie")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(movieJsonStr)))
       .once()
@@ -32,7 +33,8 @@ class RadarrUtilsSpec extends AnyFlatSpec with Matchers with RadarrUtils with Mo
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/exclusions")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(exclusionsJsonStr)))
       .once()
@@ -63,7 +65,8 @@ class RadarrUtilsSpec extends AnyFlatSpec with Matchers with RadarrUtils with Mo
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/movie")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse("[]")))
       .once()
@@ -72,7 +75,8 @@ class RadarrUtilsSpec extends AnyFlatSpec with Matchers with RadarrUtils with Mo
         Method.GET,
         Uri.unsafeFromString("http://localhost:7878").withPath(Uri.Path.unsafeFromString("/api/v3/exclusions")),
         Some("radarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse("[]")))
       .once()

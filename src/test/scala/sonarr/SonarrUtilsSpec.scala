@@ -23,7 +23,8 @@ class SonarrUtilsSpec extends AnyFlatSpec with Matchers with SonarrUtils with Mo
         Method.GET,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/series")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(seriesJsonStr)))
       .once()
@@ -34,7 +35,8 @@ class SonarrUtilsSpec extends AnyFlatSpec with Matchers with SonarrUtils with Mo
           .unsafeFromString("http://localhost:8989")
           .withPath(Uri.Path.unsafeFromString("/api/v3/importlistexclusion")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse(exclusionsJsonStr)))
       .once()
@@ -70,7 +72,8 @@ class SonarrUtilsSpec extends AnyFlatSpec with Matchers with SonarrUtils with Mo
         Method.GET,
         Uri.unsafeFromString("http://localhost:8989").withPath(Uri.Path.unsafeFromString("/api/v3/series")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse("[]")))
       .once()
@@ -81,7 +84,8 @@ class SonarrUtilsSpec extends AnyFlatSpec with Matchers with SonarrUtils with Mo
           .unsafeFromString("http://localhost:8989")
           .withPath(Uri.Path.unsafeFromString("/api/v3/importlistexclusion")),
         Some("sonarr-api-key"),
-        None
+        None,
+        *
       )
       .returning(IO.pure(parse("[]")))
       .once()
